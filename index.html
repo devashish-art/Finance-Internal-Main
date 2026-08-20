@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snackible — Command Centre</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --border: #e4e9f0;
+      --border-strong: #d0d7e3;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* TOP NAV */
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #02514F, #04756f);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .nav-logo-text {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .nav-logo-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50% { opacity:0.4; }
+    }
+
+    /* MAIN CONTENT */
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-header {
+      margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+
+    .page-header p {
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* DASHBOARD CARDS GRID */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    @media (max-width: 768px) {
+      .grid { grid-template-columns: 1fr; }
+      nav { padding: 0 20px; }
+      main { padding: 32px 16px 60px; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+      transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .card-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-open {
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-arrow {
+      font-size: 14px;
+      transition: transform 150ms ease;
+    }
+
+    .card:hover .card-arrow { transform: translate(2px, -2px); }
+
+    /* COLOR THEMES */
+    .blue   { --c: #3b82f6; --bg: #eff6ff; --badge-bg: #dbeafe; --badge-c: #1d4ed8; }
+    .red    { --c: #ef4444; --bg: #fef2f2; --badge-bg: #fee2e2; --badge-c: #b91c1c; }
+    .green  { --c: #22c55e; --bg: #f0fdf4; --badge-bg: #dcfce7; --badge-c: #15803d; }
+    .purple { --c: #a855f7; --bg: #faf5ff; --badge-bg: #f3e8ff; --badge-c: #7e22ce; }
+    .teal   { --c: #14b8a6; --bg: #f0fdfa; --badge-bg: #ccfbf1; --badge-c: #0f766e; }
+
+    .card-icon { background: var(--bg); }
+    .card-badge { background: var(--badge-bg); color: var(--badge-c); }
+    .card-open { color: var(--c); }
+    .card-footer { border-color: var(--bg); }
+
+
+
+    /* FOOTER */
+    footer {
+      max-width: 1040px;
+      margin: 32px auto 0;
+      padding: 0 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🌾</div>
+    <span class="nav-logo-text">Snackible</span>
+  </div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    All dashboards live
+  </div>
+</nav>
+
+<main>
+
+  <div class="page-header">
+    <h1>Your dashboards, all in one place</h1>
+    <p>Click any card to open the dashboard.</p>
+  </div>
+
+  <div class="section-label">Dashboards</div>
+
+  <div class="grid">
+
+    <a class="card blue" href="https://mis-dashboard-coral.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <div class="card-icon">📊</div>
+        <span class="card-badge">Finance</span>
+      </div>
+      <div class="card-title">MIS Dashboard</div>
+      <div class="card-desc">P&amp;L across all channels. Section-aware FY27 pipeline with AI insights.</div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card red" href="https://cashburn-dashboard.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <div class="card-icon">🔥</div>
+        <span class="card-badge">Finance</span>
+      </div>
+      <div class="card-title">Cash Burn</div>
+      <div class="card-desc">Bank statement burn tracking, keyword mapping rules, budget vs actual.</div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card green" href="https://cm-2-snackible.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <div class="card-icon">📈</div>
+        <span class="card-badge">Profitability</span>
+      </div>
+      <div class="card-title">CM2</div>
+      <div class="card-desc">Contribution margin waterfall for Blinkit, Zepto, and Instamart.</div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card purple" href="https://snackible-cm-2-projections.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <div class="card-icon">🔭</div>
+        <span class="card-badge">Projections</span>
+      </div>
+      <div class="card-title">CM2 Projections</div>
+      <div class="card-desc">Forward-looking CM2 scenarios and planning companion.</div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card teal" href="https://qcom-dashboard.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-top">
+        <div class="card-icon">⚡</div>
+        <span class="card-badge">Ecommerce</span>
+      </div>
+      <div class="card-title">QCom Sales</div>
+      <div class="card-desc">Blinkit, Swiggy, and Zepto weekly sales, payments, and adjustments.</div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+  </div>
+
+
+
+</main>
+
+<footer>
+  <span>Snackible Internal · Founder's Office</span>
+  <span>© 2026 Lightsaber Food Ventures</span>
+</footer>
+
+
+
+</body>
+</html>
