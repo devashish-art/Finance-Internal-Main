@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Snackible — Command Centre</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f7fa;
+      --surface: #ffffff;
+      --border: #e4e9f0;
+      --border-strong: #d0d7e3;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.06);
+    }
+
+    body {
+      background: var(--bg);
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 48px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo-text {
+      font-size: 15px;
+      font-weight: 800;
+      color: #02514F;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .nav-logo-divider {
+      width: 1px;
+      height: 16px;
+      background: var(--border-strong);
+      margin: 0 2px;
+    }
+
+    .nav-logo-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.01em;
+    }
+
+    .nav-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      background: #22c55e;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50% { opacity:0.4; }
+    }
+
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-header { margin-bottom: 40px; }
+
+    .page-header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+    }
+
+    .page-header p {
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    /* Top row: 3 equal cards */
+    .grid-top {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    /* Bottom row: 2 cards centered at same width as top */
+    .grid-bottom {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .grid-bottom .card {
+      width: calc((100% - 32px) / 3);
+    }
+
+    @media (max-width: 768px) {
+      .grid-top { grid-template-columns: 1fr; }
+      .grid-bottom { flex-direction: column; }
+      .grid-bottom .card { width: 100%; }
+      nav { padding: 0 20px; }
+      main { padding: 32px 16px 60px; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-3px);
+      border-color: var(--border-strong);
+    }
+
+    .card-body { flex: 1; }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .card-footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+    }
+
+    .card-open {
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .card-arrow {
+      font-size: 14px;
+      transition: transform 150ms ease;
+    }
+
+    .card:hover .card-arrow { transform: translate(2px, -2px); }
+
+    .blue   { --c: #3b82f6; --ibg: #eff6ff; --badge-bg: #dbeafe; --badge-c: #1d4ed8; }
+    .red    { --c: #ef4444; --ibg: #fef2f2; --badge-bg: #fee2e2; --badge-c: #b91c1c; }
+    .green  { --c: #22c55e; --ibg: #f0fdf4; --badge-bg: #dcfce7; --badge-c: #15803d; }
+    .purple { --c: #a855f7; --ibg: #faf5ff; --badge-bg: #f3e8ff; --badge-c: #7e22ce; }
+    .teal   { --c: #14b8a6; --ibg: #f0fdfa; --badge-bg: #ccfbf1; --badge-c: #0f766e; }
+
+    .card-icon { background: var(--ibg); }
+    .card-badge { background: var(--badge-bg); color: var(--badge-c); }
+    .card-open { color: var(--c); }
+    .card-footer { border-color: var(--ibg); }
+
+    footer {
+      max-width: 1040px;
+      margin: 32px auto 0;
+      padding: 0 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <span class="nav-logo-text">Snackible</span>
+    <div class="nav-logo-divider"></div>
+    <span class="nav-logo-sub">Finance Hub</span>
+  </div>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    All dashboards live
+  </div>
+</nav>
+
+<main>
+
+  <div class="page-header">
+    <h1>Your dashboards, all in one place</h1>
+    <p>Click any card to open the dashboard.</p>
+  </div>
+
+  <div class="section-label">Dashboards</div>
+
+  <!-- Top row: 3 cards -->
+  <div class="grid-top">
+
+    <a class="card blue" href="https://mis-dashboard-coral.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon">📊</div>
+          <span class="card-badge">Monthly Finance</span>
+        </div>
+        <div class="card-title">MIS Dashboard</div>
+        <div class="card-desc">Top-Line Revenue to Bottom-Line EBITDA; includes Net Sales, Margins &amp; Operating Expenses</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card red" href="https://cashburn-dashboard.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon">🔥</div>
+          <span class="card-badge">Finance Core</span>
+        </div>
+        <div class="card-title">Cash Burn</div>
+        <div class="card-desc">Automated Burn Tracking using Bank-Level Transactions, Keyword Mapping Rules &amp; Variance Analysis</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card green" href="https://cm-2-snackible.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon">📈</div>
+          <span class="card-badge">Profitability/Survival</span>
+        </div>
+        <div class="card-title">CM2</div>
+        <div class="card-desc">Contribution Margin Waterfall for Major QComs (Blinkit, Zepto, &amp; Instamart)</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- Bottom row: 2 cards centered -->
+  <div class="grid-bottom">
+
+    <a class="card purple" href="https://snackible-cm-2-projections.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon">🔭</div>
+          <span class="card-badge">Dynamic Projections</span>
+        </div>
+        <div class="card-title">CM2 Projections</div>
+        <div class="card-desc">Forward-Looking CM2 Scenarios &amp; Planning Companion</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+    <a class="card teal" href="https://qcom-dashboard.vercel.app/" target="_blank" rel="noopener">
+      <div class="card-body">
+        <div class="card-top">
+          <div class="card-icon">⚡</div>
+          <span class="card-badge">Quick-Commerce</span>
+        </div>
+        <div class="card-title">QCom Sales</div>
+        <div class="card-desc">QComs's (Blinkit, Swiggy, and Zepto) Weekly Sales, Payments, and Other Adjustments</div>
+      </div>
+      <div class="card-footer">
+        <span class="card-open">Open dashboard <span class="card-arrow">↗</span></span>
+      </div>
+    </a>
+
+  </div>
+
+</main>
+
+<footer>
+  <span>Snackible Internal · Finance Department</span>
+  <span>© 2026 Lightsaber Food Ventures</span>
+</footer>
+
+</body>
+</html>
