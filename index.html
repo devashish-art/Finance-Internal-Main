@@ -155,7 +155,7 @@
 
     .row-left {
       padding: 14px 12px;
-      display: flex; flex-direction: column; justify-content: space-between;
+      display: flex; flex-direction: column; justify-content: flex-start; gap: 6px;
       border-right: 1px solid var(--border);
     }
     .row-icon { font-size: 20px; margin-bottom: 6px; }
@@ -164,9 +164,7 @@
       padding: 2px 6px; border-radius: 20px; display: inline-block; margin-bottom: 5px;
     }
     .row-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
-    .row-open { font-size: 10px; font-weight: 500; display: flex; align-items: center; gap: 3px; margin-top: 10px; }
-    .row-arrow { font-size: 12px; transition: transform 120ms ease; }
-    .row:hover .row-arrow { transform: translate(2px, -2px); }
+
 
     .row-right {
       padding: 10px 12px;
@@ -192,7 +190,6 @@
 
     .row-left  { background: var(--ibg); }
     .row-badge { background: var(--badge-bg); color: var(--badge-c); }
-    .row-open  { color: var(--c); }
 
     footer {
       max-width: 1040px;
@@ -326,7 +323,6 @@
           <span class="row-badge">Monthly Finance</span>
           <div class="row-title">MIS Dashboard</div>
         </div>
-        <span class="row-open">Open dashboard <span class="row-arrow">↗</span></span>
       </div>
       <div class="row-right">
         <div class="row-section">
@@ -346,7 +342,6 @@
           <span class="row-badge">Finance Core</span>
           <div class="row-title">Cash Burn</div>
         </div>
-        <span class="row-open">Open dashboard <span class="row-arrow">↗</span></span>
       </div>
       <div class="row-right">
         <div id="burn-metrics" style="display:flex;gap:0;flex:1;"><div class="metric-loading"><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div>&nbsp;Loading…</div></div>
@@ -360,7 +355,6 @@
           <span class="row-badge">Profitability/Survival</span>
           <div class="row-title">CM2</div>
         </div>
-        <span class="row-open">Open dashboard <span class="row-arrow">↗</span></span>
       </div>
       <div class="row-right">
         <div id="cm2-metrics" style="display:flex;gap:0;flex:1;"><div class="metric-loading"><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div>&nbsp;Loading…</div></div>
@@ -374,7 +368,6 @@
           <span class="row-badge">Dynamic Projections</span>
           <div class="row-title">CM2 Projections</div>
         </div>
-        <span class="row-open">Open dashboard <span class="row-arrow">↗</span></span>
       </div>
       <div class="row-right">
         <div id="proj-metrics" style="flex:1;"><div class="metric-loading"><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div>&nbsp;Loading…</div></div>
@@ -388,7 +381,6 @@
           <span class="row-badge">Quick-Commerce</span>
           <div class="row-title">QCom Sales</div>
         </div>
-        <span class="row-open">Open dashboard <span class="row-arrow">↗</span></span>
       </div>
       <div class="row-right">
         <div id="qcom-metrics" style="display:flex;gap:0;flex:1;"><div class="metric-loading"><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div><div class="metric-loading-dot"></div>&nbsp;Loading…</div></div>
