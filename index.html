@@ -705,20 +705,7 @@ async function loadCM2() {
 
     el.innerHTML = `
       <div class="row-section">
-        <div class="row-section-title">${monthShort(lastM)} · Last Month</div>
-        <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_last)}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendLast!==null&&blendLast>=0?'positive':'negative'}">${blendLast!==null?blendLast.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_last!==null&&adsVisPct_last<=15?'positive':'negative'}">${adsVisPct_last!==null?adsVisPct_last.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
-          ${portalTags_last.map(t=>mkTag(t.label, t.pct)).join('')}
-        </div>
-      </div>
-      <div class="row-vdivider"></div>
-      <div class="row-section">
-        <div class="row-section-title">Apr'26→${monthShort(lastM)} · Cumulative</div>
+        <div class="row-section-title">FY27 YTD Apr'26–${monthShort(lastM)}</div>
         <div class="row-kpis">
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_cum)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendCum!==null&&blendCum>=0?'positive':'negative'}">${blendCum!==null?blendCum.toFixed(1)+'%':'—'}</span></div>
@@ -727,6 +714,19 @@ async function loadCM2() {
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
           ${portals.map(p=>mkTag(pLabel[p], portalTags_cum[p])).join('')}
+        </div>
+      </div>
+      <div class="row-vdivider"></div>
+      <div class="row-section">
+        <div class="row-section-title">${monthShort(lastM)} · Latest Month</div>
+        <div class="row-kpis">
+          <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_last)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendLast!==null&&blendLast>=0?'positive':'negative'}">${blendLast!==null?blendLast.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_last!==null&&adsVisPct_last<=15?'positive':'negative'}">${adsVisPct_last!==null?adsVisPct_last.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
+          ${portalTags_last.map(t=>mkTag(t.label, t.pct)).join('')}
         </div>
       </div>`;
 
