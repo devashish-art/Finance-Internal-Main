@@ -511,12 +511,13 @@ async function loadBurn() {
 
     const monthLabel = new Date(latestMonth+'-01').toLocaleString('en-IN',{month:'short',year:'2-digit'});
     const s = latestData.summary;
-    const netBurn  = s.burn ?? null;
-    const totalExp = s.totalExpenses ?? null;
-    const totalRev = s.totalRevenue ?? null;
+    const netBurn    = s.burn ?? null;
+    const totalExp   = s.totalExpenses ?? null;
+    const totalRev   = s.totalRevenue ?? null;
+    const latestCashFlow = netBurn !== null ? (netBurn + (s.financing ?? 0) + (s.investing ?? 0)) : null;
 
     const ytdMonths = ['2026-04','2026-05','2026-06','2026-07','2026-08'].filter(m => m <= latestMonth);
-    let ytdBurn = 0, ytdCashFlow = 0, ytdSweepIn = 0, ytdFetched = 0;
+    let ytdBurn = 0, ytdCashFlow = 0, ytdSweepIn = 0, ytdTotalRev = 0, ytdFetched = 0;
     await Promise.all(ytdMonths.map(async m => {
       try {
         const url = `${BURN_URL}?action=getBurnData&payload=${encodeURIComponent(JSON.stringify({month:m}))}`;
@@ -528,6 +529,7 @@ async function loadBurn() {
           const investing  = j.summary.investing  ?? 0;
           ytdCashFlow += (j.summary.burn ?? 0) + financing + investing;
           ytdSweepIn  += j.summary.sweepIn ?? 0;
+          ytdTotalRev += j.summary.totalRevenue ?? 0;
           ytdFetched++;
         }
       } catch(e) {}
@@ -537,6 +539,7 @@ async function loadBurn() {
       <div class="row-section">
         <div class="row-section-title">FY27 YTD Apr–${monthLabel}</div>
         <div class="row-kpis">
+          <div class="metric-pill"><span class="metric-pill-label">Total Revenue</span><span class="metric-pill-value positive">${ytdFetched ? fmt(ytdTotalRev) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Net Burn</span><span class="metric-pill-value ${ytdBurn < 0 ? 'negative' : 'positive'}">${ytdFetched ? fmt(ytdBurn) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Cash Flow</span><span class="metric-pill-value ${ytdCashFlow >= 0 ? 'positive' : 'negative'}">${ytdFetched ? fmt(ytdCashFlow) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Sweep-Ins</span><span class="metric-pill-value neutral">${ytdFetched ? fmt(ytdSweepIn) : '—'}</span></div>
@@ -546,9 +549,10 @@ async function loadBurn() {
       <div class="row-section">
         <div class="row-section-title">${monthLabel} · Latest Month</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Net Burn</span><span class="metric-pill-value ${netBurn !== null && netBurn < 0 ? 'negative' : 'positive'}">${fmt(netBurn)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Revenue</span><span class="metric-pill-value positive">${fmt(totalRev)}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Expenses</span><span class="metric-pill-value neutral">${fmt(Math.abs(totalExp))}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Net Burn</span><span class="metric-pill-value ${netBurn !== null && netBurn < 0 ? 'negative' : 'positive'}">${fmt(netBurn)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Cash Flow</span><span class="metric-pill-value ${latestCashFlow !== null && latestCashFlow >= 0 ? 'positive' : 'negative'}">${fmt(latestCashFlow)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Sweep-Ins</span><span class="metric-pill-value neutral">${fmt(s.sweepIn ?? 0)}</span></div>
         </div>
       </div>`;
   } catch(e) { el.innerHTML = errorHTML('Failed: ' + e.message); }
