@@ -710,10 +710,13 @@ async function loadCM2() {
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_cum)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendCum!==null&&blendCum>=0?'positive':'negative'}">${blendCum!==null?blendCum.toFixed(1)+'%':'—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_cum!==null&&adsVisPct_cum<=15?'positive':'negative'}">${adsVisPct_cum!==null?adsVisPct_cum.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_cum!==null?promosPct_cum.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${promosPct_cum!==null?promosPct_cum.toFixed(1)+'%':'—'}</span></div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
-          ${portals.map(p=>mkTag(pLabel[p], portalTags_cum[p])).join('')}
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px;">
+          <div></div>
+          <div style="font-size:9px;font-weight:700;color:#FBAE25;">${pLabel['blinkit']}: ${portalTags_cum['blinkit']!==null?portalTags_cum['blinkit'].toFixed(1)+'%':'—'}</div>
+          <div style="font-size:9px;font-weight:700;color:#E35C25;">${pLabel['zepto']}: ${portalTags_cum['zepto']!==null?portalTags_cum['zepto'].toFixed(1)+'%':'—'}</div>
+          <div style="font-size:9px;font-weight:700;color:#4C94D0;">${pLabel['instamart']}: ${portalTags_cum['instamart']!==null?portalTags_cum['instamart'].toFixed(1)+'%':'—'}</div>
         </div>
       </div>
       <div class="row-vdivider"></div>
@@ -723,10 +726,11 @@ async function loadCM2() {
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_last)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendLast!==null&&blendLast>=0?'positive':'negative'}">${blendLast!==null?blendLast.toFixed(1)+'%':'—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_last!==null&&adsVisPct_last<=15?'positive':'negative'}">${adsVisPct_last!==null?adsVisPct_last.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
-          ${portalTags_last.map(t=>mkTag(t.label, t.pct)).join('')}
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px;">
+          <div></div>
+          ${portalTags_last.map((t,i)=>`<div style="font-size:9px;font-weight:700;color:${['#FBAE25','#E35C25','#4C94D0'][i]};">${t.label}: ${t.pct!==null?t.pct.toFixed(1)+'%':'—'}</div>`).join('')}
         </div>
       </div>`;
 
