@@ -651,13 +651,14 @@ async function loadCM2() {
       const vis    = skuVis    || (+(pt.vis || 0) + +(nlcPT.vis || 0));
 
       const cm2 = cm1 - promos - ads - vis;
-      return { gmv, netSales, cm2, cm2Pct: netSales > 0 ? cm2 / netSales * 100 : 0 };
+      return { gmv, netSales, cm2, cm2Pct: netSales > 0 ? cm2 / netSales * 100 : 0, promos, ads, vis };
     }
 
-    let totalGMV_last = 0, totalNS_last = 0, totalCM2_last = 0;
+    let totalGMV_last = 0, totalNS_last = 0, totalCM2_last = 0, totalAdsVis_last = 0, totalPromos_last = 0;
     let totalGMV_prev = 0, totalNS_prev = 0, totalCM2_prev = 0;
-    let totalGMV_cum  = 0, totalNS_cum  = 0, totalCM2_cum  = 0;
-    const portalTags = [];
+    let totalGMV_cum  = 0, totalNS_cum  = 0, totalCM2_cum  = 0, totalAdsVis_cum = 0, totalPromos_cum = 0;
+    const portalTags_last = [];
+    const portalTags_cum  = {};
 
     portals.forEach(p => {
       const portalCfg = cfg[p] || { commission:35, tax:5, directExp:2.9, labour:2, logistics:8 };
@@ -666,7 +667,8 @@ async function loadCM2() {
       if (eLast) {
         const t = calcTotals(eLast, eLast.config || portalCfg);
         totalGMV_last += t.gmv; totalNS_last += t.netSales; totalCM2_last += t.cm2;
-        portalTags.push(`${pLabel[p]}: ${t.cm2Pct.toFixed(1)}%`);
+        totalAdsVis_last += t.ads + t.vis; totalPromos_last += t.promos;
+        portalTags_last.push({ label: pLabel[p], pct: t.cm2Pct });
       }
 
       if (prevM) {
@@ -677,38 +679,54 @@ async function loadCM2() {
         }
       }
 
+      let pCumNS = 0, pCumCM2 = 0;
       cumMonths.forEach(m => {
         const e = data[dKey(p, m)];
         if (e) {
           const t = calcTotals(e, e.config || portalCfg);
           totalGMV_cum += t.gmv; totalNS_cum += t.netSales; totalCM2_cum += t.cm2;
+          totalAdsVis_cum += t.ads + t.vis; totalPromos_cum += t.promos;
+          pCumNS += t.netSales; pCumCM2 += t.cm2;
         }
       });
+      portalTags_cum[p] = pCumNS > 0 ? pCumCM2 / pCumNS * 100 : null;
     });
 
     const blendLast = totalNS_last > 0 ? totalCM2_last / totalNS_last * 100 : null;
     const blendPrev = totalNS_prev > 0 ? totalCM2_prev / totalNS_prev * 100 : null;
     const mom       = blendLast !== null && blendPrev !== null ? blendLast - blendPrev : null;
     const blendCum  = totalNS_cum  > 0 ? totalCM2_cum  / totalNS_cum  * 100 : null;
+    const adsVisPct_last = totalNS_last > 0 ? totalAdsVis_last / totalNS_last * 100 : null;
+    const promosPct_last = totalNS_last > 0 ? totalPromos_last / totalNS_last * 100 : null;
+    const adsVisPct_cum  = totalNS_cum  > 0 ? totalAdsVis_cum  / totalNS_cum  * 100 : null;
+    const promosPct_cum  = totalNS_cum  > 0 ? totalPromos_cum  / totalNS_cum  * 100 : null;
+
+    const mkTag = (label, pct) => `<span class="metric-tag">${label}: ${pct!==null?pct.toFixed(1)+'%':'—'}</span>`;
 
     el.innerHTML = `
       <div class="row-section">
         <div class="row-section-title">${monthShort(lastM)} · Last Month</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendLast!==null&&blendLast>=0?'positive':'negative'}">${blendLast!==null?blendLast.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">MoM Δ</span><span class="metric-pill-value ${mom!==null&&mom>=0?'positive':'negative'}">${mom!==null?(mom>=0?'+':'')+mom.toFixed(1)+'pp':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">GMV</span><span class="metric-pill-value neutral">${fmt(totalGMV_last)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_last)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendLast!==null&&blendLast>=0?'positive':'negative'}">${blendLast!==null?blendLast.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_last!==null&&adsVisPct_last<=15?'positive':'negative'}">${adsVisPct_last!==null?adsVisPct_last.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">${portalTags.map(t=>`<span class="metric-tag">${t}</span>`).join('')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
+          ${portalTags_last.map(t=>mkTag(t.label, t.pct)).join('')}
+        </div>
       </div>
       <div class="row-vdivider"></div>
       <div class="row-section">
         <div class="row-section-title">Apr'26→${monthShort(lastM)} · Cumulative</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendCum!==null&&blendCum>=0?'positive':'negative'}">${blendCum!==null?blendCum.toFixed(1)+'%':'—'}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">GMV</span><span class="metric-pill-value neutral">${fmt(totalGMV_cum)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_cum)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendCum!==null&&blendCum>=0?'positive':'negative'}">${blendCum!==null?blendCum.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_cum!==null&&adsVisPct_cum<=15?'positive':'negative'}">${adsVisPct_cum!==null?adsVisPct_cum.toFixed(1)+'%':'—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value neutral">${promosPct_cum!==null?promosPct_cum.toFixed(1)+'%':'—'}</span></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;">
+          ${portals.map(p=>mkTag(pLabel[p], portalTags_cum[p])).join('')}
         </div>
       </div>`;
 
