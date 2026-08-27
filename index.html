@@ -712,11 +712,10 @@ async function loadCM2() {
           <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_cum!==null&&adsVisPct_cum<=15?'positive':'negative'}">${adsVisPct_cum!==null?adsVisPct_cum.toFixed(1)+'%':'—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${promosPct_cum!==null?promosPct_cum.toFixed(1)+'%':'—'}</span></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px;">
-          <div></div>
-          <div style="font-size:9px;font-weight:700;color:#FBAE25;">${pLabel['blinkit']}: ${portalTags_cum['blinkit']!==null?portalTags_cum['blinkit'].toFixed(1)+'%':'—'}</div>
-          <div style="font-size:9px;font-weight:700;color:#E35C25;">${pLabel['zepto']}: ${portalTags_cum['zepto']!==null?portalTags_cum['zepto'].toFixed(1)+'%':'—'}</div>
-          <div style="font-size:9px;font-weight:700;color:#4C94D0;">${pLabel['instamart']}: ${portalTags_cum['instamart']!==null?portalTags_cum['instamart'].toFixed(1)+'%':'—'}</div>
+        <div style="display:flex;justify-content:space-around;margin-top:6px;">
+          <div style="font-size:9px;font-weight:700;color:#FBAE25;text-align:center;">Blinkit<br>${portalTags_cum['blinkit']!==null?portalTags_cum['blinkit'].toFixed(1)+'%':'—'}</div>
+          <div style="font-size:9px;font-weight:700;color:#E35C25;text-align:center;">Zepto<br>${portalTags_cum['zepto']!==null?portalTags_cum['zepto'].toFixed(1)+'%':'—'}</div>
+          <div style="font-size:9px;font-weight:700;color:#4C94D0;text-align:center;">Instamart<br>${portalTags_cum['instamart']!==null?portalTags_cum['instamart'].toFixed(1)+'%':'—'}</div>
         </div>
       </div>
       <div class="row-vdivider"></div>
@@ -728,9 +727,8 @@ async function loadCM2() {
           <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value ${adsVisPct_last!==null&&adsVisPct_last<=15?'positive':'negative'}">${adsVisPct_last!==null?adsVisPct_last.toFixed(1)+'%':'—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${promosPct_last!==null?promosPct_last.toFixed(1)+'%':'—'}</span></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-top:6px;">
-          <div></div>
-          ${portalTags_last.map((t,i)=>`<div style="font-size:9px;font-weight:700;color:${['#FBAE25','#E35C25','#4C94D0'][i]};">${t.label}: ${t.pct!==null?t.pct.toFixed(1)+'%':'—'}</div>`).join('')}
+        <div style="display:flex;justify-content:space-around;margin-top:6px;">
+          ${portalTags_last.map((t,i)=>`<div style="font-size:9px;font-weight:700;color:${['#FBAE25','#E35C25','#4C94D0'][i]};text-align:center;">${t.label}<br>${t.pct!==null?t.pct.toFixed(1)+'%':'—'}</div>`).join('')}
         </div>
       </div>`;
 
