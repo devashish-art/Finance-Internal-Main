@@ -857,9 +857,9 @@ async function loadQCom() {
 
     const bestRow = (best) => `
       <div style="display:flex;justify-content:space-around;margin-top:6px;">
-        <div style="font-size:9px;font-weight:700;color:#FBAE25;">Blinkit · ${best.B.wk} (${best.B.range}) · ${fmt(best.B.val)}</div>
-        <div style="font-size:9px;font-weight:700;color:#E35C25;">Swiggy · ${best.S.wk} (${best.S.range}) · ${fmt(best.S.val)}</div>
-        <div style="font-size:9px;font-weight:700;color:#4C94D0;">Zepto · ${best.Z.wk} (${best.Z.range}) · ${fmt(best.Z.val)}</div>
+        <div style="font-size:9px;font-weight:700;color:#FBAE25;">Blinkit · ${best.B.wk} · ${fmt(best.B.val)}</div>
+        <div style="font-size:9px;font-weight:700;color:#E35C25;">Swiggy · ${best.S.wk} · ${fmt(best.S.val)}</div>
+        <div style="font-size:9px;font-weight:700;color:#4C94D0;">Zepto · ${best.Z.wk} · ${fmt(best.Z.val)}</div>
       </div>`;
 
     const ytdTotal  = ytdB + ytdS + ytdZ;
