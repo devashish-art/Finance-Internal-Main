@@ -739,14 +739,87 @@ async function loadCM2() {
 // ── CM2 PROJECTIONS ──
 async function loadProjections() {
   const el = document.getElementById('proj-metrics');
-  el.innerHTML = `
-    <div style="font-size:10px;font-weight:600;color:#94a3b8;letter-spacing:0.06em;text-transform:uppercase;margin-top:16px;">Planning Tool</div>
-    <div class="card-metrics">
-      <div class="metric-pill"><span class="metric-pill-label">Portals</span><span class="metric-pill-value neutral">Blinkit · Zepto · Instamart</span></div>
-      <div class="metric-pill"><span class="metric-pill-label">Sync</span><span class="metric-pill-value positive">Cross-device ✓</span></div>
-    </div>
-    <div class="metric-divider"></div>
-    <div class="metric-context"><span class="metric-context-dot warn"></span>Open dashboard to view target GMV &amp; projected CM2% by scenario</div>`;
+  try {
+    const r = await fetch(CM2_URL + '?action=loadProjections', { cache: 'no-store' });
+    const j = await r.json();
+    if (!j || j.error) throw new Error('no data');
+
+    // Find latest projection month (last key chronologically)
+    const MONTHS = ['April 2025','May 2025','June 2025','July 2025','August 2025','September 2025',
+      'October 2025','November 2025','December 2025','January 2026','February 2026','March 2026',
+      'April 2026','May 2026','June 2026','July 2026','August 2026','September 2026','October 2026'];
+    const pColor = { blinkit:'#FBAE25', zepto:'#E35C25', instamart:'#4C94D0' };
+    const pLabel = { blinkit:'Blinkit', zepto:'Zepto', instamart:'Instamart' };
+    const portals = ['blinkit','zepto','instamart'];
+
+    // Sort keys by month order, pick latest
+    const keys = Object.keys(j);
+    const sortedKeys = keys.sort((a,b) => {
+      const mA = MONTHS.indexOf(j[a]?.month || '');
+      const mB = MONTHS.indexOf(j[b]?.month || '');
+      return mA - mB;
+    });
+    const latestKey = sortedKeys[sortedKeys.length - 1];
+    const proj = j[latestKey];
+    if (!proj) throw new Error('no projection');
+
+    const monthShortP = m => { const p = (m||'').split(' '); return (p[0]||'').slice(0,3) + "'" + (p[1]||'').slice(2); };
+    const label = proj.label || 'Base Case';
+    const month = monthShortP(proj.month);
+
+    // Aggregate per portal and combined
+    let combNS=0, combCM2=0, combPromos=0, combAdsVis=0;
+    const portalStats = {};
+
+    portals.forEach(p => {
+      const skus = proj.portals?.[p]?.skus || [];
+      let ns=0, cm2=0, promos=0, adsVis=0;
+      skus.forEach(s => {
+        ns     += +s.netSales || 0;
+        cm2    += +s.cm2      || 0;
+        promos += +s.promos   || 0;
+        adsVis += +s.adsVis   || 0;
+      });
+      portalStats[p] = { ns, cm2, promos, adsVis,
+        cm2Pct:    ns > 0 ? cm2    / ns * 100 : 0,
+        promosPct: ns > 0 ? promos / ns * 100 : 0,
+        adsVisPct: ns > 0 ? adsVis / ns * 100 : 0,
+      };
+      combNS     += ns;
+      combCM2    += cm2;
+      combPromos += promos;
+      combAdsVis += adsVis;
+    });
+
+    const combCM2Pct    = combNS > 0 ? combCM2    / combNS * 100 : 0;
+    const combPromosPct = combNS > 0 ? combPromos / combNS * 100 : 0;
+    const combAdsVisPct = combNS > 0 ? combAdsVis / combNS * 100 : 0;
+
+    el.innerHTML = `
+      <div class="row-section">
+        <div class="row-section-title">${month} · ${label} · Combined</div>
+        <div class="row-kpis">
+          <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(combNS)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${combCM2Pct>=0?'positive':'negative'}">${combCM2Pct.toFixed(1)}%</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value negative">${combAdsVisPct.toFixed(1)}%</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${combPromosPct.toFixed(1)}%</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-around;margin-top:6px;">
+          ${portals.map(p=>`<div style="font-size:9px;font-weight:700;color:${pColor[p]};">${pLabel[p]}: ${portalStats[p].cm2Pct.toFixed(1)}%</div>`).join('')}
+        </div>
+      </div>`;
+
+  } catch(e) {
+    el.innerHTML = `
+      <div class="row-section">
+        <div class="row-section-title">Planning Tool</div>
+        <div class="row-kpis">
+          <div class="metric-pill"><span class="metric-pill-label">Portals</span><span class="metric-pill-value neutral">Blinkit · Zepto · Instamart</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Sync</span><span class="metric-pill-value positive">Cross-device ✓</span></div>
+        </div>
+        <div class="metric-context" style="margin-top:6px;"><span class="metric-context-dot warn"></span>Open dashboard to view projections</div>
+      </div>`;
+  }
 }
 
 // ── QCOM SALES ──
