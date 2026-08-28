@@ -457,8 +457,9 @@ async function loadMIS() {
     const ytdCM2pct    = ytdRev ? (ytdCM2 / ytdRev * 100) : null;
     const ytdEBITDApct = ytdRev ? (ytdEBITDA / ytdRev * 100) : null;
 
+    const fmtMon = s => s.replace('-', "'");
     ytdEl.innerHTML = `
-      <div class="row-section-title">FY27 YTD · ${firstM}–${lastM}</div>
+      <div class="row-section-title">FY27 YTD · ${fmtMon(firstM)}–${fmtMon(lastM)}</div>
       <div class="row-kpis">
         <div class="metric-pill"><span class="metric-pill-label">Revenue</span><span class="metric-pill-value neutral">${fmt(ytdRev)}</span></div>
         <div class="metric-pill"><span class="metric-pill-label">Gross Margin%</span><span class="metric-pill-value ${ytdGMpct>=0?'positive':'negative'}">${ytdGMpct!==null?ytdGMpct.toFixed(1)+'%':'—'}</span></div>
@@ -475,7 +476,7 @@ async function loadMIS() {
     const latestEBITDApct = latestRev ? (latestEBITDA / latestRev * 100) : null;
 
     latestEl.innerHTML = `
-      <div class="row-section-title">${lastM} · Latest Month</div>
+      <div class="row-section-title">${fmtMon(lastM)} · Latest Month</div>
       <div class="row-kpis">
         <div class="metric-pill"><span class="metric-pill-label">Revenue</span><span class="metric-pill-value neutral">${fmt(latestRev)}</span></div>
         <div class="metric-pill"><span class="metric-pill-label">Gross Margin%</span><span class="metric-pill-value ${latestGMpct>=0?'positive':'negative'}">${latestGMpct!==null?latestGMpct.toFixed(1)+'%':'—'}</span></div>
@@ -509,7 +510,7 @@ async function loadBurn() {
     }
     if (!latestData) { el.innerHTML = errorHTML('No burn data available'); return; }
 
-    const monthLabel = new Date(latestMonth+'-01').toLocaleString('en-IN',{month:'short',year:'2-digit'});
+    const monthLabel = new Date(latestMonth+'-01').toLocaleString('en-IN',{month:'short',year:'2-digit'}).replace(' ', "'");
     const s = latestData.summary;
     const netBurn    = s.burn ?? null;
     const totalExp   = s.totalExpenses ?? null;
@@ -578,7 +579,7 @@ async function loadCM2() {
     const portals = ['blinkit', 'zepto', 'instamart'];
     const pLabel  = { blinkit: 'Blinkit', zepto: 'Zepto', instamart: 'Instamart' };
     const dKey    = (p, m) => p + '_' + m;
-    const monthShort = m => { const p = m.split(' '); return p[0].slice(0,3) + "'" + p[1].slice(2); };
+    const monthShort = m => { const p = m.split(' '); return p[0].slice(0,3) + ' ' + p[1].slice(2); };
 
     const allMonths = MONTHS.filter(m => portals.some(p => data[dKey(p, m)]));
     if (!allMonths.length) { el.innerHTML = errorHTML('No CM2 data found'); return; }
@@ -848,7 +849,7 @@ async function loadQCom() {
         monB += b; monS += s; monZ += z;
         if (!monWeekFirst) monWeekFirst = clean(bgnRow[i]);
         monWeekLast = clean(endRow[i]);
-        monLabel = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+        monLabel = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' }).replace(' ', "'");
         if (b > bestMon.B.val) bestMon.B = { val:b, wk, range };
         if (s > bestMon.S.val) bestMon.S = { val:s, wk, range };
         if (z > bestMon.Z.val) bestMon.Z = { val:z, wk, range };
@@ -867,7 +868,7 @@ async function loadQCom() {
 
     const ytdTotal  = ytdB + ytdS + ytdZ;
     const monTotal  = monB + monS + monZ;
-    const ytdRange  = `Apr'26 – ${monLabel || clean(endRow[lastIdx])}`;
+    const ytdRange  = `Apr'26–${monLabel || clean(endRow[lastIdx])}`;
     const monRange  = monWeekFirst && monWeekLast ? `${monWeekFirst} – ${monWeekLast}` : monLabel;
 
     el.innerHTML = `
