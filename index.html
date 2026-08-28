@@ -769,10 +769,11 @@ async function loadQCom() {
     });
 
     const parseNum = s => parseFloat((s||'').replace(/,/g,'').replace(/"/g,'')) || 0;
+    const clean = s => (s||'').replace(/"/g,'').trim();
 
     const findRow = (colA, colB) => rows.findIndex(r =>
-      r[0].replace(/"/g,'').trim().toLowerCase() === colA.toLowerCase() &&
-      r[1].replace(/"/g,'').trim().toLowerCase() === colB.toLowerCase()
+      clean(r[0]).toLowerCase() === colA.toLowerCase() &&
+      clean(r[1]).toLowerCase() === colB.toLowerCase()
     );
 
     const weekRow = rows[0] || [];
@@ -787,42 +788,84 @@ async function loadQCom() {
     const swiggySales  = sSalesIdx >= 0 ? rows[sSalesIdx] : [];
     const zeptoSales   = zSalesIdx >= 0 ? rows[zSalesIdx] : [];
 
-    let lastIdx = 2;
+    // Parse start date from bgnRow — format like "1-Apr", "3-Aug"
+    const monthNames = { jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11 };
+    const parseStartDate = (s) => {
+      s = clean(s);
+      const m = s.match(/(\d+)-([A-Za-z]+)/);
+      if (!m) return null;
+      const day = parseInt(m[1]);
+      const mon = monthNames[m[2].toLowerCase().slice(0,3)];
+      if (mon === undefined) return null;
+      // Assume FY Apr 2026 onwards — year logic
+      const yr = (mon >= 3) ? 2026 : 2027; // Apr=3, Mar=2
+      return new Date(yr, mon, day);
+    };
+
+    const ytdStart = new Date(2026, 3, 1); // 1 Apr 2026
+
+    // Find last column with data (week start in past or today)
+    const today = new Date();
+    let lastIdx = -1;
     for (let i = 2; i < weekRow.length; i++) {
+      const d = parseStartDate(bgnRow[i]);
+      if (!d || d > today) break;
       const b = parseNum(blinkitSales[i]);
       const s = parseNum(swiggySales[i]);
       const z = parseNum(zeptoSales[i]);
       if (b > 0 || s > 0 || z > 0) lastIdx = i;
     }
+    if (lastIdx < 0) { el.innerHTML = errorHTML('No QCom data'); return; }
 
-    const weekLabel = (weekRow[lastIdx]||'').replace(/"/g,'').trim();
-    const bgn = (bgnRow[lastIdx]||'').replace(/"/g,'').trim();
-    const end = (endRow[lastIdx]||'').replace(/"/g,'').trim();
-    const weekRange = bgn && end ? `${bgn} – ${end}` : weekLabel;
+    // Determine latest month from last week's start date
+    const lastStartDate = parseStartDate(bgnRow[lastIdx]);
+    const latestMonth = lastStartDate ? lastStartDate.getMonth() : -1;
+    const latestYear  = lastStartDate ? lastStartDate.getFullYear() : -1;
 
-    const bSales = parseNum(blinkitSales[lastIdx]);
-    const sSales = parseNum(swiggySales[lastIdx]);
-    const zSales = parseNum(zeptoSales[lastIdx]);
-    const totalSales = bSales + sSales + zSales;
+    // Accumulate by month (start date determines month)
+    let ytdB = 0, ytdS = 0, ytdZ = 0;
+    let monB = 0, monS = 0, monZ = 0;
+    let monLabel = '', monWeekFirst = '', monWeekLast = '';
 
-    const portalList = [['Blinkit', bSales], ['Swiggy', sSales], ['Zepto', zSales]];
-    const topPortal = [...portalList].sort((a,b) => b[1]-a[1])[0][0];
+    for (let i = 2; i <= lastIdx; i++) {
+      const d = parseStartDate(bgnRow[i]);
+      if (!d || d < ytdStart) continue;
+      const b = parseNum(blinkitSales[i]);
+      const s = parseNum(swiggySales[i]);
+      const z = parseNum(zeptoSales[i]);
+      ytdB += b; ytdS += s; ytdZ += z;
+      // Latest month — week start must be in same month/year as last week
+      if (d.getMonth() === latestMonth && d.getFullYear() === latestYear) {
+        monB += b; monS += s; monZ += z;
+        if (!monWeekFirst) monWeekFirst = clean(bgnRow[i]);
+        monWeekLast = clean(endRow[i]);
+        monLabel = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+      }
+    }
+
+    const ytdTotal  = ytdB + ytdS + ytdZ;
+    const monTotal  = monB + monS + monZ;
+    const ytdRange  = `Apr'26 – ${monLabel || clean(endRow[lastIdx])}`;
+    const monRange  = monWeekFirst && monWeekLast ? `${monWeekFirst} – ${monWeekLast}` : monLabel;
 
     el.innerHTML = `
       <div class="row-section">
-        <div class="row-section-title">${weekLabel} · ${weekRange}</div>
+        <div class="row-section-title">FY27 YTD · ${ytdRange}</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Combined Sales</span><span class="metric-pill-value neutral">${fmt(totalSales)}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Top Portal</span><span class="metric-pill-value positive">${topPortal}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Combined Sales</span><span class="metric-pill-value neutral">${fmt(ytdTotal)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#FBAE25;">Blinkit</span><span class="metric-pill-value neutral">${fmt(ytdB)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#E35C25;">Swiggy</span><span class="metric-pill-value neutral">${fmt(ytdS)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#4C94D0;">Zepto</span><span class="metric-pill-value neutral">${fmt(ytdZ)}</span></div>
         </div>
       </div>
       <div class="row-vdivider"></div>
       <div class="row-section">
-        <div class="row-section-title">Portal Breakdown</div>
+        <div class="row-section-title">${monLabel} · ${monRange}</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Blinkit</span><span class="metric-pill-value neutral">${fmt(bSales)}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Swiggy</span><span class="metric-pill-value neutral">${fmt(sSales)}</span></div>
-          <div class="metric-pill"><span class="metric-pill-label">Zepto</span><span class="metric-pill-value neutral">${fmt(zSales)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Combined Sales</span><span class="metric-pill-value neutral">${fmt(monTotal)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#FBAE25;">Blinkit</span><span class="metric-pill-value neutral">${fmt(monB)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#E35C25;">Swiggy</span><span class="metric-pill-value neutral">${fmt(monS)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="color:#4C94D0;">Zepto</span><span class="metric-pill-value neutral">${fmt(monZ)}</span></div>
         </div>
       </div>`;
   } catch(e) { el.innerHTML = errorHTML('Failed: ' + e.message); }
