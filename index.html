@@ -856,10 +856,13 @@ async function loadQCom() {
     }
 
     const bestRow = (best) => `
-      <div style="display:flex;justify-content:space-around;margin-top:6px;">
-        <div style="font-size:9px;font-weight:700;color:#FBAE25;">Blinkit · ${best.B.wk} · ${fmt(best.B.val)}</div>
-        <div style="font-size:9px;font-weight:700;color:#E35C25;">Swiggy · ${best.S.wk} · ${fmt(best.S.val)}</div>
-        <div style="font-size:9px;font-weight:700;color:#4C94D0;">Zepto · ${best.Z.wk} · ${fmt(best.Z.val)}</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+        <div style="font-size:8px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">Peak Week</div>
+        <div style="display:flex;justify-content:space-around;flex:1;">
+          <div style="font-size:9px;font-weight:700;color:#FBAE25;">Blinkit · ${best.B.wk} · ${fmt(best.B.val)}</div>
+          <div style="font-size:9px;font-weight:700;color:#E35C25;">Swiggy · ${best.S.wk} · ${fmt(best.S.val)}</div>
+          <div style="font-size:9px;font-weight:700;color:#4C94D0;">Zepto · ${best.Z.wk} · ${fmt(best.Z.val)}</div>
+        </div>
       </div>`;
 
     const ytdTotal  = ytdB + ytdS + ytdZ;
