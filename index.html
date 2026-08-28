@@ -804,8 +804,12 @@ async function loadProjections() {
           <div class="metric-pill"><span class="metric-pill-label">Ads+Vis % NS</span><span class="metric-pill-value negative">${combAdsVisPct.toFixed(1)}%</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Promos % NS</span><span class="metric-pill-value negative">${combPromosPct.toFixed(1)}%</span></div>
         </div>
-        <div style="display:flex;justify-content:space-around;margin-top:6px;">
-          ${portals.map(p=>`<div style="font-size:9px;font-weight:700;color:${pColor[p]};">${pLabel[p]}: ${portalStats[p].cm2Pct.toFixed(1)}%</div>`).join('')}
+      </div>
+      <div class="row-vdivider"></div>
+      <div class="row-section">
+        <div class="row-section-title">Portal CM2%</div>
+        <div class="row-kpis">
+          ${portals.map(p=>`<div class="metric-pill"><span class="metric-pill-label" style="color:${pColor[p]};">${pLabel[p]}</span><span class="metric-pill-value ${portalStats[p].cm2Pct>=0?'positive':'negative'}">${portalStats[p].cm2Pct.toFixed(1)}%</span></div>`).join('')}
         </div>
       </div>`;
 
