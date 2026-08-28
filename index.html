@@ -827,21 +827,40 @@ async function loadQCom() {
     let monB = 0, monS = 0, monZ = 0;
     let monLabel = '', monWeekFirst = '', monWeekLast = '';
 
+    // Best week trackers: { val, wk, range }
+    let bestYtd  = { B:{val:0,wk:'',range:''}, S:{val:0,wk:'',range:''}, Z:{val:0,wk:'',range:''} };
+    let bestMon  = { B:{val:0,wk:'',range:''}, S:{val:0,wk:'',range:''}, Z:{val:0,wk:'',range:''} };
+
     for (let i = 2; i <= lastIdx; i++) {
       const d = parseStartDate(bgnRow[i]);
       if (!d || d < ytdStart) continue;
       const b = parseNum(blinkitSales[i]);
       const s = parseNum(swiggySales[i]);
       const z = parseNum(zeptoSales[i]);
+      const wk    = clean(weekRow[i]);
+      const range = clean(bgnRow[i]) + ' – ' + clean(endRow[i]);
       ytdB += b; ytdS += s; ytdZ += z;
-      // Latest month — week start must be in same month/year as last week
+      if (b > bestYtd.B.val) bestYtd.B = { val:b, wk, range };
+      if (s > bestYtd.S.val) bestYtd.S = { val:s, wk, range };
+      if (z > bestYtd.Z.val) bestYtd.Z = { val:z, wk, range };
+      // Latest month
       if (d.getMonth() === latestMonth && d.getFullYear() === latestYear) {
         monB += b; monS += s; monZ += z;
         if (!monWeekFirst) monWeekFirst = clean(bgnRow[i]);
         monWeekLast = clean(endRow[i]);
         monLabel = d.toLocaleString('en-IN', { month: 'short', year: '2-digit' });
+        if (b > bestMon.B.val) bestMon.B = { val:b, wk, range };
+        if (s > bestMon.S.val) bestMon.S = { val:s, wk, range };
+        if (z > bestMon.Z.val) bestMon.Z = { val:z, wk, range };
       }
     }
+
+    const bestRow = (best) => `
+      <div style="display:flex;justify-content:space-around;margin-top:6px;">
+        <div style="font-size:9px;font-weight:700;color:#FBAE25;">Blinkit · ${best.B.wk} (${best.B.range}) · ${fmt(best.B.val)}</div>
+        <div style="font-size:9px;font-weight:700;color:#E35C25;">Swiggy · ${best.S.wk} (${best.S.range}) · ${fmt(best.S.val)}</div>
+        <div style="font-size:9px;font-weight:700;color:#4C94D0;">Zepto · ${best.Z.wk} (${best.Z.range}) · ${fmt(best.Z.val)}</div>
+      </div>`;
 
     const ytdTotal  = ytdB + ytdS + ytdZ;
     const monTotal  = monB + monS + monZ;
@@ -857,6 +876,7 @@ async function loadQCom() {
           <div class="metric-pill"><span class="metric-pill-label" style="color:#E35C25;">Swiggy</span><span class="metric-pill-value neutral">${fmt(ytdS)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label" style="color:#4C94D0;">Zepto</span><span class="metric-pill-value neutral">${fmt(ytdZ)}</span></div>
         </div>
+        ${bestRow(bestYtd)}
       </div>
       <div class="row-vdivider"></div>
       <div class="row-section">
@@ -867,6 +887,7 @@ async function loadQCom() {
           <div class="metric-pill"><span class="metric-pill-label" style="color:#E35C25;">Swiggy</span><span class="metric-pill-value neutral">${fmt(monS)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label" style="color:#4C94D0;">Zepto</span><span class="metric-pill-value neutral">${fmt(monZ)}</span></div>
         </div>
+        ${bestRow(bestMon)}
       </div>`;
   } catch(e) { el.innerHTML = errorHTML('Failed: ' + e.message); }
 }
