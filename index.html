@@ -883,7 +883,7 @@ async function loadProjections() {
       <div class="row-section">
         <div class="row-section-title">Portal CM2%</div>
         <div class="row-kpis">
-          <div class="metric-pill" style="justify-content:center"><span style="color:#a479e2;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Base Case</span></div>
+          <div class="metric-pill" style="justify-content:center"><span style="color:#a479e2;font-weight:800;font-size:15px;text-transform:uppercase;letter-spacing:.04em">Base Case</span></div>
           ${portals.map(p=>`<div class="metric-pill"><span class="metric-pill-label" style="color:${pColor[p]};">${pLabel[p]}</span><span class="metric-pill-value ${portalStats[p].cm2Pct>=0?'positive':'negative'}">${portalStats[p].cm2Pct.toFixed(2)}%</span></div>`).join('')}
         </div>
         ${portalBestRow}
