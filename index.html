@@ -740,11 +740,10 @@ async function loadCM2() {
 async function loadProjections() {
   const el = document.getElementById('proj-metrics');
   try {
-    const r = await fetch(CM2_URL + '?action=loadProjections', { cache: 'no-store' });
+    const r = await fetch(CM2_URL + '?action=loadAllChunks', { cache: 'no-store' });
     const j = await r.json();
     if (!j || j.error) throw new Error('no data');
 
-    // Find latest projection month (last key chronologically)
     const MONTHS = ['April 2025','May 2025','June 2025','July 2025','August 2025','September 2025',
       'October 2025','November 2025','December 2025','January 2026','February 2026','March 2026',
       'April 2026','May 2026','June 2026','July 2026','August 2026','September 2026','October 2026'];
@@ -752,15 +751,38 @@ async function loadProjections() {
     const pLabel = { blinkit:'Blinkit', zepto:'Zepto', instamart:'Instamart' };
     const portals = ['blinkit','zepto','instamart'];
 
-    // Sort keys by month order, pick latest
-    const keys = Object.keys(j);
-    const sortedKeys = keys.sort((a,b) => {
-      const mA = MONTHS.indexOf(j[a]?.month || '');
-      const mB = MONTHS.indexOf(j[b]?.month || '');
+    // Reconstruct savedProjections from proj_ chunks
+    const allData = j.data || {};
+    const rebuilt = {};
+    Object.keys(allData).forEach(key => {
+      if (!key.startsWith('proj_')) return;
+      const withoutPrefix = key.slice(5);
+      const lastSep = withoutPrefix.lastIndexOf('__');
+      if (lastSep < 0) return;
+      const versionKey = withoutPrefix.slice(0, lastSep);
+      const portal     = withoutPrefix.slice(lastSep + 2);
+      const chunk      = allData[key];
+      if (!rebuilt[versionKey]) rebuilt[versionKey] = { month: chunk.month, label: chunk.label, portals: {} };
+      rebuilt[versionKey].portals[portal] = chunk.portalSnap;
+    });
+
+    // Fallback to old loadProjections format
+    let savedProjections = rebuilt;
+    if (!Object.keys(savedProjections).length) {
+      const r2 = await fetch(CM2_URL + '?action=loadProjections', { cache: 'no-store' });
+      savedProjections = await r2.json() || {};
+    }
+
+    if (!Object.keys(savedProjections).length) throw new Error('no projection');
+
+    // Find latest projection month
+    const sortedKeys = Object.keys(savedProjections).sort((a,b) => {
+      const mA = MONTHS.indexOf(savedProjections[a]?.month || '');
+      const mB = MONTHS.indexOf(savedProjections[b]?.month || '');
       return mA - mB;
     });
     const latestKey = sortedKeys[sortedKeys.length - 1];
-    const proj = j[latestKey];
+    const proj = savedProjections[latestKey];
     if (!proj) throw new Error('no projection');
 
     const monthShortP = m => { const p = (m||'').split(' '); return (p[0]||'').slice(0,3) + "'" + (p[1]||'').slice(2); };
@@ -772,14 +794,25 @@ async function loadProjections() {
     const portalStats = {};
 
     portals.forEach(p => {
-      const skus = proj.portals?.[p]?.skus || [];
+      const portalData = proj.portals?.[p];
+      // Support both chunked format (ns, cm2, ads, promos) and skus array format
       let ns=0, cm2=0, promos=0, adsVis=0;
-      skus.forEach(s => {
-        ns     += +s.netSales || 0;
-        cm2    += +s.cm2      || 0;
-        promos += +s.promos   || 0;
-        adsVis += +s.adsVis   || 0;
-      });
+      if (portalData?.ns !== undefined) {
+        // Chunked format — pre-aggregated
+        ns     = +portalData.ns     || 0;
+        cm2    = +portalData.cm2    || 0;
+        promos = +portalData.promos || 0;
+        adsVis = +portalData.ads    || 0;
+      } else {
+        // Old format — sum from skus array
+        const skus = portalData?.skus || [];
+        skus.forEach(s => {
+          ns     += +s.netSales || 0;
+          cm2    += +s.cm2      || 0;
+          promos += +s.promos   || 0;
+          adsVis += +s.adsVis   || 0;
+        });
+      }
       portalStats[p] = { ns, cm2, promos, adsVis,
         cm2Pct:    ns > 0 ? cm2    / ns * 100 : 0,
         promosPct: ns > 0 ? promos / ns * 100 : 0,
