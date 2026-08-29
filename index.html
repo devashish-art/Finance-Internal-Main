@@ -859,12 +859,12 @@ async function loadProjections() {
     const colStyle = 'flex:1;text-align:center;font-size:10px;font-weight:700';
     const portalBestRow = bestPortal ? `
       <div style="display:flex;align-items:center;margin-top:7px">
-        <div style="${colStyle};font-size:9px;color:#00D68F">▲ Best</div>
+        <div style="${colStyle};font-size:9px;color:#00D68F">▲ Best Case</div>
         ${portals.map(p=>`<div style="${colStyle};color:${bestPortal[p]>=0?'#00D68F':'#FF4D6A'}">${bestPortal[p].toFixed(2)}%</div>`).join('')}
       </div>` : '';
     const portalWorstRow = worstPortal ? `
       <div style="display:flex;align-items:center;margin-top:4px">
-        <div style="${colStyle};font-size:9px;color:#FF4D6A">▼ Worst</div>
+        <div style="${colStyle};font-size:9px;color:#FF4D6A">▼ Worst Case</div>
         ${portals.map(p=>`<div style="${colStyle};color:${worstPortal[p]>=0?'#00D68F':'#FF4D6A'}">${worstPortal[p].toFixed(2)}%</div>`).join('')}
       </div>` : '';
 
