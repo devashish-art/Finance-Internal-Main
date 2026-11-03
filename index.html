@@ -230,6 +230,7 @@
     }
 
     .metric-pill-label {
+      line-height: 1.3;
       font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.05em;
@@ -237,7 +238,9 @@
       color: var(--text-primary);
     }
 
+    /* Values sit on one line across a row, however many lines the label takes */
     .metric-pill-value {
+      margin-top: auto;
       font-size: 15px;
       font-weight: 700;
       color: var(--text-primary);
@@ -569,7 +572,7 @@ async function loadBurn() {
       <div class="row-section">
         <div class="row-section-title">${fyLabel(fyStartYear)} YTD Apr–${monthLabel}</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Total Operating Cash-In</span><span class="metric-pill-value positive">${ytdFetched ? fmt(ytdTotalRev) : '—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="letter-spacing:0.01em">Total Operating<br>Cash‑In</span><span class="metric-pill-value positive">${ytdFetched ? fmt(ytdTotalRev) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Net Burn</span><span class="metric-pill-value ${ytdBurn < 0 ? 'negative' : 'positive'}">${ytdFetched ? fmt(ytdBurn) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Cash Flow</span><span class="metric-pill-value ${ytdCashFlow >= 0 ? 'positive' : 'negative'}">${ytdFetched ? fmt(ytdCashFlow) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Sweep-Ins</span><span class="metric-pill-value neutral">${ytdFetched ? fmt(ytdSweepIn) : '—'}</span></div>
@@ -579,7 +582,7 @@ async function loadBurn() {
       <div class="row-section">
         <div class="row-section-title">${monthLabel} · Latest Month</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Operating Cash-In</span><span class="metric-pill-value positive">${fmt(totalRev)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label" style="letter-spacing:0.01em">Operating<br>Cash‑In</span><span class="metric-pill-value positive">${fmt(totalRev)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Net Burn</span><span class="metric-pill-value ${netBurn !== null && netBurn < 0 ? 'negative' : 'positive'}">${fmt(netBurn)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Cash Flow</span><span class="metric-pill-value ${latestCashFlow !== null && latestCashFlow >= 0 ? 'positive' : 'negative'}">${fmt(latestCashFlow)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Sweep-Ins</span><span class="metric-pill-value neutral">${fmt(s.sweepIn ?? 0)}</span></div>
