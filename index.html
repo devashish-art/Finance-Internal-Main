@@ -553,6 +553,7 @@ async function loadBurn() {
       ytdMonths.push(y + '-' + String(mo).padStart(2, '0'));
     }
     let ytdBurn = 0, ytdCashFlow = 0, ytdSweepIn = 0, ytdTotalRev = 0, ytdFetched = 0;
+    const burnByMonth = []; // { m, burn } for best / toughest month
     await Promise.all(ytdMonths.map(async m => {
       try {
         const url = `${BURN_URL}?action=getBurnData&payload=${encodeURIComponent(JSON.stringify({month:m}))}`;
@@ -560,6 +561,7 @@ async function loadBurn() {
         const j = await r.json();
         if (j && !j.error && j.summary) {
           ytdBurn += j.summary.burn ?? 0;
+          burnByMonth.push({ m, burn: j.summary.burn ?? 0 });
           ytdCashFlow += cashFlowOf(j.summary);
           ytdSweepIn  += j.summary.sweepIn ?? 0;
           ytdTotalRev += j.summary.totalRevenue ?? 0;
@@ -567,6 +569,21 @@ async function loadBurn() {
         }
       } catch(e) {}
     }));
+
+    // Best = lowest burn (highest net figure), Toughest = highest burn (most negative)
+    const monLbl = m => new Date(m + '-01').toLocaleString('en-IN', { month: 'short', year: '2-digit' }).replace(' ', "'");
+    // Running month is incomplete, so it is left out of the comparison
+    const nowKey = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
+    const sortedBurn = burnByMonth.filter(x => x.m !== nowKey).sort((a, b) => b.burn - a.burn);
+    const bestM = sortedBurn[0], worstM = sortedBurn[sortedBurn.length - 1];
+    const burnExtremes = sortedBurn.length > 1 ? `
+        <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">Net Burn</div>
+          <div style="display:flex;justify-content:space-around;flex:1;">
+            <div style="font-size:9px;font-weight:700;color:#16a34a;">Best Month · ${monLbl(bestM.m)} · ${fmt(bestM.burn)}</div>
+            <div style="font-size:9px;font-weight:700;color:#dc2626;">Toughest Month · ${monLbl(worstM.m)} · ${fmt(worstM.burn)}</div>
+          </div>
+        </div>` : '';
 
     el.innerHTML = `
       <div class="row-section">
@@ -577,6 +594,7 @@ async function loadBurn() {
           <div class="metric-pill"><span class="metric-pill-label">YTD Cash Flow</span><span class="metric-pill-value ${ytdCashFlow >= 0 ? 'positive' : 'negative'}">${ytdFetched ? fmt(ytdCashFlow) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Sweep-Ins</span><span class="metric-pill-value neutral">${ytdFetched ? fmt(ytdSweepIn) : '—'}</span></div>
         </div>
+        ${burnExtremes}
       </div>
       <div class="row-vdivider"></div>
       <div class="row-section">
