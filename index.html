@@ -585,6 +585,18 @@ async function loadBurn() {
           </div>
         </div>` : '';
 
+    // Average monthly net burn over completed months this FY
+    const doneMonths = burnByMonth.filter(x => x.m !== nowKey).sort((a, b) => a.m.localeCompare(b.m));
+    const avgBurn = doneMonths.length ? doneMonths.reduce((t, x) => t + x.burn, 0) / doneMonths.length : null;
+    const avgRange = doneMonths.length ? monLbl(doneMonths[0].m) + '–' + monLbl(doneMonths[doneMonths.length - 1].m) : '';
+    const burnAvgRow = avgBurn !== null ? `
+        <div style="display:flex;align-items:center;gap:12px;margin-top:6px;">
+          <div style="font-size:8px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap;">YTD Average</div>
+          <div style="display:flex;justify-content:space-around;flex:1;">
+            <div style="font-size:9px;font-weight:700;color:${avgBurn < 0 ? '#dc2626' : '#16a34a'};">Avg Monthly Net Burn · ${fmt(avgBurn)} · ${avgRange} (${doneMonths.length} month${doneMonths.length > 1 ? 's' : ''})</div>
+          </div>
+        </div>` : '';
+
     el.innerHTML = `
       <div class="row-section">
         <div class="row-section-title">${fyLabel(fyStartYear)} YTD Apr–${monthLabel}</div>
@@ -605,6 +617,7 @@ async function loadBurn() {
           <div class="metric-pill"><span class="metric-pill-label">Cash Flow</span><span class="metric-pill-value ${latestCashFlow !== null && latestCashFlow >= 0 ? 'positive' : 'negative'}">${fmt(latestCashFlow)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Sweep-Ins</span><span class="metric-pill-value neutral">${fmt(s.sweepIn ?? 0)}</span></div>
         </div>
+        ${burnAvgRow}
       </div>`;
   } catch(e) { el.innerHTML = errorHTML('Failed: ' + e.message); }
 }
