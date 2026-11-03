@@ -520,9 +520,17 @@ async function loadBurn() {
     const netBurn    = s.burn ?? null;
     const totalExp   = s.totalExpenses ?? null;
     const totalRev   = s.totalRevenue ?? null;
-    const latestCashFlow = netBurn !== null ? (netBurn + (s.financing ?? 0) + (s.investing ?? 0)) : null;
+    const cashFlowOf = x => x.cashflow ?? ((x.burn ?? 0) + (x.contra ?? 0) + (x.financing ?? 0) + (x.investing ?? 0) + (x.suspense ?? 0));
+    const latestCashFlow = netBurn !== null ? cashFlowOf(s) : null;
 
-    const ytdMonths = ['2026-04','2026-05','2026-06','2026-07','2026-08'].filter(m => m <= latestMonth);
+    // Every month from April of the current FY up to the latest month (was hardcoded Apr–Aug)
+    const [ly, lm] = latestMonth.split('-').map(Number);
+    const fyStartYear = lm >= 4 ? ly : ly - 1;
+    const ytdMonths = [];
+    for (let y = fyStartYear, mo = 4; y * 12 + mo <= ly * 12 + lm; mo++) {
+      if (mo > 12) { mo = 1; y++; }
+      ytdMonths.push(y + '-' + String(mo).padStart(2, '0'));
+    }
     let ytdBurn = 0, ytdCashFlow = 0, ytdSweepIn = 0, ytdTotalRev = 0, ytdFetched = 0;
     await Promise.all(ytdMonths.map(async m => {
       try {
@@ -531,9 +539,7 @@ async function loadBurn() {
         const j = await r.json();
         if (j && !j.error && j.summary) {
           ytdBurn += j.summary.burn ?? 0;
-          const financing = j.summary.financing ?? 0;
-          const investing  = j.summary.investing  ?? 0;
-          ytdCashFlow += (j.summary.burn ?? 0) + financing + investing;
+          ytdCashFlow += cashFlowOf(j.summary);
           ytdSweepIn  += j.summary.sweepIn ?? 0;
           ytdTotalRev += j.summary.totalRevenue ?? 0;
           ytdFetched++;
