@@ -397,6 +397,20 @@ const BURN_URL = 'https://script.google.com/macros/s/AKfycbyMC3y3yAWbcGjMTSAhols
 const CM2_URL  = 'https://script.google.com/macros/s/AKfycbzZWmiZk9RCmg6RTqqgObYjzMn545VGHorUQg66yHo1R-f9NbpDqyjBqRXlnJWpLHU-/exec';
 const QCOM_URL = 'https://script.google.com/macros/s/AKfycbxWNCuc8rXgrmzNqxi6b0IGoaizxqj3f9R_nFxXFqwTkgEKKo3-rvTC_ZW1bpy7PWCm/exec';
 
+// ── PERIOD HELPERS (no hard-coded years) ──
+// Indian FY runs Apr–Mar. fyStartOf(2026, 10) → 2026 ; fyStartOf(2027, 2) → 2026
+const fyStartOf = (y, m1) => (m1 >= 4 ? y : y - 1);
+const fyLabel   = startY => 'FY' + String((startY + 1) % 100).padStart(2, '0');
+const FULL_MON  = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+// "April 2025" … up to `aheadMonths` past today, so new months appear automatically
+function monthNameList(fromY, fromM1, aheadMonths) {
+  const now = new Date(), out = [];
+  const end = now.getFullYear() * 12 + now.getMonth() + (aheadMonths || 0);
+  for (let i = fromY * 12 + fromM1 - 1; i <= end; i++) out.push(FULL_MON[i % 12] + ' ' + Math.floor(i / 12));
+  return out;
+}
+const CUR_FY_START = fyStartOf(new Date().getFullYear(), new Date().getMonth() + 1);
+
 function fmt(n) {
   if (n === null || n === undefined || isNaN(n)) return '—';
   const abs = Math.abs(n);
@@ -435,8 +449,12 @@ async function loadMIS() {
     const rows = j.rows || [];
     if (!months.length) { ytdEl.innerHTML = errorHTML('No MIS data'); return; }
 
-    const apr26Idx = months.indexOf('Apr-26');
-    const ytdMonths = apr26Idx >= 0 ? months.slice(apr26Idx) : months;
+    // FY of the latest MIS month ("Oct-26" → FY27), YTD from its April
+    const [lmName, lmYY] = String(months[months.length - 1]).split('-');
+    const lmIdx = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].indexOf(lmName) + 1;
+    const misFyStart = fyStartOf(2000 + parseInt(lmYY, 10), lmIdx);
+    const aprIdx = months.indexOf('Apr-' + String(misFyStart % 100).padStart(2, '0'));
+    const ytdMonths = aprIdx >= 0 ? months.slice(aprIdx) : months;
     const lastM = ytdMonths[ytdMonths.length - 1];
     const firstM = ytdMonths[0];
 
@@ -459,7 +477,7 @@ async function loadMIS() {
 
     const fmtMon = s => s.replace('-', "'");
     ytdEl.innerHTML = `
-      <div class="row-section-title">FY27 YTD · ${fmtMon(firstM)}–${fmtMon(lastM)}</div>
+      <div class="row-section-title">${fyLabel(misFyStart)} YTD · ${fmtMon(firstM)}–${fmtMon(lastM)}</div>
       <div class="row-kpis">
         <div class="metric-pill"><span class="metric-pill-label">Revenue</span><span class="metric-pill-value neutral">${fmt(ytdRev)}</span></div>
         <div class="metric-pill"><span class="metric-pill-label">Gross Margin%</span><span class="metric-pill-value ${ytdGMpct>=0?'positive':'negative'}">${ytdGMpct!==null?ytdGMpct.toFixed(2)+'%':'—'}</span></div>
@@ -549,9 +567,9 @@ async function loadBurn() {
 
     el.innerHTML = `
       <div class="row-section">
-        <div class="row-section-title">FY27 YTD Apr–${monthLabel}</div>
+        <div class="row-section-title">${fyLabel(fyStartYear)} YTD Apr–${monthLabel}</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Total Revenue</span><span class="metric-pill-value positive">${ytdFetched ? fmt(ytdTotalRev) : '—'}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Total Operating Cash-In</span><span class="metric-pill-value positive">${ytdFetched ? fmt(ytdTotalRev) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Net Burn</span><span class="metric-pill-value ${ytdBurn < 0 ? 'negative' : 'positive'}">${ytdFetched ? fmt(ytdBurn) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Cash Flow</span><span class="metric-pill-value ${ytdCashFlow >= 0 ? 'positive' : 'negative'}">${ytdFetched ? fmt(ytdCashFlow) : '—'}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">YTD Sweep-Ins</span><span class="metric-pill-value neutral">${ytdFetched ? fmt(ytdSweepIn) : '—'}</span></div>
@@ -561,7 +579,7 @@ async function loadBurn() {
       <div class="row-section">
         <div class="row-section-title">${monthLabel} · Latest Month</div>
         <div class="row-kpis">
-          <div class="metric-pill"><span class="metric-pill-label">Revenue</span><span class="metric-pill-value positive">${fmt(totalRev)}</span></div>
+          <div class="metric-pill"><span class="metric-pill-label">Operating Cash-In</span><span class="metric-pill-value positive">${fmt(totalRev)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Net Burn</span><span class="metric-pill-value ${netBurn !== null && netBurn < 0 ? 'negative' : 'positive'}">${fmt(netBurn)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Cash Flow</span><span class="metric-pill-value ${latestCashFlow !== null && latestCashFlow >= 0 ? 'positive' : 'negative'}">${fmt(latestCashFlow)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Sweep-Ins</span><span class="metric-pill-value neutral">${fmt(s.sweepIn ?? 0)}</span></div>
@@ -581,12 +599,7 @@ async function loadCM2() {
     const cfg  = j.config || {};
     const data = j.data   || {};
 
-    const MONTHS = [
-      'April 2025','May 2025','June 2025','July 2025','August 2025','September 2025',
-      'October 2025','November 2025','December 2025','January 2026','February 2026','March 2026',
-      'April 2026','May 2026','June 2026','July 2026','August 2026','September 2026',
-      'October 2026','November 2026','December 2026',
-    ];
+    const MONTHS = monthNameList(2025, 4, 2); // April 2025 → 2 months ahead of today
     const portals = ['blinkit', 'zepto', 'instamart'];
     const pLabel  = { blinkit: 'Blinkit', zepto: 'Zepto', instamart: 'Instamart' };
     const dKey    = (p, m) => p + '_' + m;
@@ -597,8 +610,10 @@ async function loadCM2() {
 
     const lastM  = allMonths[allMonths.length - 1];
     const prevM  = allMonths.length > 1 ? allMonths[allMonths.length - 2] : null;
-    const apr26Idx = allMonths.indexOf('April 2026');
-    const cumMonths = apr26Idx >= 0 ? allMonths.slice(apr26Idx) : [];
+    const [lmN, lmY] = lastM.split(' ');
+    const cm2FyStart = fyStartOf(+lmY, FULL_MON.indexOf(lmN) + 1);
+    const aprIdx = allMonths.indexOf('April ' + cm2FyStart);
+    const cumMonths = aprIdx >= 0 ? allMonths.slice(aprIdx) : [];
 
     function calcTotals(entry, portalCfg) {
       const skus    = entry.skus    || [];
@@ -717,7 +732,7 @@ async function loadCM2() {
 
     el.innerHTML = `
       <div class="row-section">
-        <div class="row-section-title">FY27 YTD Apr'26–${monthShort(lastM)}</div>
+        <div class="row-section-title">${fyLabel(cm2FyStart)} YTD Apr'${String(cm2FyStart % 100).padStart(2,'0')}–${monthShort(lastM)}</div>
         <div class="row-kpis">
           <div class="metric-pill"><span class="metric-pill-label">Net Sales</span><span class="metric-pill-value neutral">${fmt(totalNS_cum)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label">Blended CM2%</span><span class="metric-pill-value ${blendCum!==null&&blendCum>=0?'positive':'negative'}">${blendCum!==null?blendCum.toFixed(2)+'%':'—'}</span></div>
@@ -755,9 +770,7 @@ async function loadProjections() {
     const j = await r.json();
     if (!j || j.error) throw new Error('no data');
 
-    const MONTHS = ['April 2025','May 2025','June 2025','July 2025','August 2025','September 2025',
-      'October 2025','November 2025','December 2025','January 2026','February 2026','March 2026',
-      'April 2026','May 2026','June 2026','July 2026','August 2026','September 2026','October 2026'];
+    const MONTHS = monthNameList(2025, 4, 6); // projections can be for future months
     const pColor = { blinkit:'#FBAE25', zepto:'#E35C25', instamart:'#4C94D0' };
     const pLabel = { blinkit:'Blinkit', zepto:'Zepto', instamart:'Instamart' };
     const portals = ['blinkit','zepto','instamart'];
@@ -963,19 +976,20 @@ async function loadQCom() {
       const day = parseInt(m[1]);
       const mon = monthNames[m[2].toLowerCase().slice(0,3)];
       if (mon === undefined) return null;
-      // Assume FY Apr 2026 onwards — year logic
-      const yr = (mon >= 3) ? 2026 : 2027; // Apr=3, Mar=2
+      // Sheet has no year: Apr–Dec = current FY start year, Jan–Mar = next year
+      const yr = (mon >= 3) ? CUR_FY_START : CUR_FY_START + 1;
       return new Date(yr, mon, day);
     };
 
-    const ytdStart = new Date(2026, 3, 1); // 1 Apr 2026
+    const ytdStart = new Date(CUR_FY_START, 3, 1); // 1 Apr of current FY
 
     // Find last column with data (week start in past or today)
     const today = new Date();
     let lastIdx = -1;
     for (let i = 2; i < weekRow.length; i++) {
       const d = parseStartDate(bgnRow[i]);
-      if (!d || d > today) break;
+      if (!d) continue;          // skip blank / subtotal columns instead of stopping
+      if (d > today) break;
       const b = parseNum(blinkitSales[i]);
       const s = parseNum(swiggySales[i]);
       const z = parseNum(zeptoSales[i]);
@@ -1033,12 +1047,12 @@ async function loadQCom() {
 
     const ytdTotal  = ytdB + ytdS + ytdZ;
     const monTotal  = monB + monS + monZ;
-    const ytdRange  = `Apr'26–${monLabel || clean(endRow[lastIdx])}`;
+    const ytdRange  = `Apr'${String(CUR_FY_START % 100).padStart(2,'0')}–${monLabel || clean(endRow[lastIdx])}`;
     const monRange  = monWeekFirst && monWeekLast ? `${monWeekFirst} – ${monWeekLast}` : monLabel;
 
     el.innerHTML = `
       <div class="row-section">
-        <div class="row-section-title">FY27 YTD · ${ytdRange}</div>
+        <div class="row-section-title">${fyLabel(CUR_FY_START)} YTD · ${ytdRange}</div>
         <div class="row-kpis">
           <div class="metric-pill"><span class="metric-pill-label">Combined Sales</span><span class="metric-pill-value neutral">${fmt(ytdTotal)}</span></div>
           <div class="metric-pill"><span class="metric-pill-label" style="color:#FBAE25;">Blinkit</span><span class="metric-pill-value neutral">${fmt(ytdB)}</span></div>
